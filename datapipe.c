@@ -76,7 +76,7 @@ struct client_t
 #define IDLETIMEOUT 300
 
 
-const char ident[] = "$Id: datapipe.c,v 1.5 1998/11/30 19:40:17 jlawson Exp $";
+const char ident[] = "$Id: datapipe.c,v 1.6 1998/12/02 01:54:04 jlawson Exp $";
 
 int main(int argc, char *argv[])
 { 
@@ -197,7 +197,7 @@ int main(int argc, char *argv[])
         if ((int) clients[i].osock > maxsock)
           maxsock = (int) clients[i].osock;
       }      
-    if (select(maxsock, &fdsr, NULL, NULL, &tv) < 0) {
+    if (select(maxsock + 1, &fdsr, NULL, NULL, &tv) < 0) {
       return 30;
     }
 
