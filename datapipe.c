@@ -76,7 +76,7 @@ struct client_t
 #define IDLETIMEOUT 300
 
 
-const char ident[] = "$Id: datapipe.c,v 1.6 1998/12/02 01:54:04 jlawson Exp $";
+const char ident[] = "$Id: datapipe.c,v 1.7 1999/01/21 09:20:23 jlawson Exp $";
 
 int main(int argc, char *argv[])
 { 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
     fprintf(stderr, "invalid listener port\n");
     return 20;
   }
-  if ((long) laddr.sin_addr.s_addr == -1 || !laddr.sin_addr.s_addr) {
+  if ((long) laddr.sin_addr.s_addr == -1) {
     struct hostent *n;
     if ((n = gethostbyname(argv[1])) == NULL) {
       perror("gethostbyname");
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     return 25;
   }
   oaddr.sin_addr.s_addr = inet_addr(argv[3]);
-  if ((long) oaddr.sin_addr.s_addr == -1 || !oaddr.sin_addr.s_addr) {
+  if ((long) oaddr.sin_addr.s_addr == -1) {
     struct hostent *n;
     if ((n = gethostbyname(argv[3])) == NULL) {
       perror("gethostbyname");
