@@ -2,6 +2,7 @@
  * Datapipe - Create a listen socket to pipe connections to another
  * machine/port. 'localport' accepts connections on the machine running    
  * datapipe, which will connect to 'remoteport' on 'remotehost'.
+ * It will fork itself into the background on non-Windows machines.
  *
  * This implementation of the tradition "datapipe" does not depend on
  * forking to handle multiple simultaneous clients, and instead is able
@@ -15,19 +16,20 @@
  * specified listening address will also be used for making the outgoing
  * connections on.
  *
+ * Compile with:
+ *     cc -O -o datapipe datapipe.c
+ * On Windows compile with:
+ *     bcc32 datapipe.c               (Borland C++)
+ *     cl datapipe.c wsock32.lib      (Microsoft Visual C++)
+ *
+ * Run as:
+ *   datapipe localhost localport remoteport remotehost
+ *
+ *
+ * written by Jeff Lawson <jlawson@bovine.net>
+ * inspired by code originally by Todd Vierling, 1995.
  */
 
-/*
-Compile with:
-    cc -O -o ipdatapipe ipdatapipe.c
-On Windows compile with:
-    bcc32 ipdatapipe.c
-
-Run as:
-    ipdatapipe localhost localport remoteport remotehost
-
-It will fork itself into the background on non-Windows machines.
-*/
 
 
 #include <stdio.h>
@@ -35,7 +37,7 @@ It will fork itself into the background on non-Windows machines.
 #include <string.h>
 #include <errno.h>
 #include <time.h>
-#if defined(__WIN32__) || defined(WIN32)
+#if defined(__WIN32__) || defined(WIN32) || defined(_WIN32)
   #define WIN32_LEAN_AND_MEAN
   #include <winsock.h>
   #define bzero(p, l) memset(p, 0, l)
@@ -74,26 +76,26 @@ int main(int argc, char *argv[])
   struct client_t clients[MAXCLIENTS];
 
 
-#if defined(__WIN32__) || defined(WIN32)
-  // Winsock needs additional startup activities
+#if defined(__WIN32__) || defined(WIN32) || defined(_WIN32)
+  /* Winsock needs additional startup activities */
   WSADATA wsadata;
   WSAStartup(MAKEWORD(1,1), &wsadata);
 #endif
 
 
-  // check number of command line arguments
+  /* check number of command line arguments */
   if (argc != 5) {
     fprintf(stderr,"Usage: %s localhost localport remotehost remoteport\n",argv[0]);
     return 30;
   }
 
 
-  // reset all of the client structures
+  /* reset all of the client structures */
   for (i = 0; i < MAXCLIENTS; i++)
     clients[i].inuse = 0;
 
 
-  // determine the listener address and port
+  /* determine the listener address and port */
   bzero(&laddr, sizeof(struct sockaddr_in));
   laddr.sin_family = AF_INET;
   laddr.sin_port = htons((unsigned short) atol(argv[2]));
@@ -112,7 +114,7 @@ int main(int argc, char *argv[])
   }
 
 
-  // determine the outgoing address and port
+  /* determine the outgoing address and port */
   bzero(&oaddr, sizeof(struct sockaddr_in));
   oaddr.sin_family = AF_INET;
   oaddr.sin_port = htons((unsigned short) atol(argv[4]));
@@ -131,7 +133,7 @@ int main(int argc, char *argv[])
   }
 
 
-  // create the listener socket
+  /* create the listener socket */
   if ((lsock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     perror("socket");
     return 20;
@@ -146,13 +148,13 @@ int main(int argc, char *argv[])
   }
 
 
-  // change the port in the listener struct to zero, since we will
-  // use it for binding to outgoing local sockets in the future.
+  /* change the port in the listener struct to zero, since we will
+   * use it for binding to outgoing local sockets in the future. */
   laddr.sin_port = htons(0);
 
 
-  // fork off into the background
-#if !defined(__WIN32__) && !defined(WIN32)
+  /* fork off into the background. */
+#if !defined(__WIN32__) && !defined(WIN32) && !defined(_WIN32)
   if ((nbyt = fork()) == -1) {
     perror("fork");
     return 20;
@@ -163,7 +165,7 @@ int main(int argc, char *argv[])
 #endif
 
   
-  // main polling loop  
+  /* main polling loop. */
   while (1)
   {
     fd_set fdsr;
@@ -171,7 +173,7 @@ int main(int argc, char *argv[])
     struct timeval tv = {1,0};
     time_t now = time(NULL);
 
-    // build the list of sockets to check
+    /* build the list of sockets to check. */
     FD_ZERO(&fdsr);
     FD_SET(lsock, &fdsr);
     maxsock = (int) lsock;
@@ -189,7 +191,7 @@ int main(int argc, char *argv[])
     }
 
 
-    // check if there are new connections to accept
+    /* check if there are new connections to accept. */
     if (FD_ISSET(lsock, &fdsr))
     {
       SOCKET csock = accept(lsock, NULL, 0);
@@ -198,7 +200,7 @@ int main(int argc, char *argv[])
         if (!clients[i].inuse) break;
       if (i < MAXCLIENTS)
       {
-        // connect a socket to the outgoing host/port
+        /* connect a socket to the outgoing host/port */
         SOCKET osock;
         if ((osock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
           perror("socket");
@@ -227,7 +229,7 @@ int main(int argc, char *argv[])
     }
 
 
-    // service any client connections that have waiting data
+    /* service any client connections that have waiting data. */
     for (i = 0; i < MAXCLIENTS; i++)
     {
       int nbyt, closeneeded = 0;
