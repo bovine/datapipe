@@ -18,9 +18,11 @@
  *
  * Compile with:
  *     cc -O -o datapipe datapipe.c
+ * On Solaris/SunOS, compile with:
+ *     gcc -Wall datapipe.c -lsocket -lnsl -o datapipe
  * On Windows compile with:
- *     bcc32 datapipe.c               (Borland C++)
- *     cl datapipe.c wsock32.lib      (Microsoft Visual C++)
+ *     bcc32 datapipe.c                   (Borland C++)
+ *     cl /W3 datapipe.c wsock32.lib      (Microsoft Visual C++)
  *
  * Run as:
  *   datapipe localhost localport remoteport remotehost
@@ -47,8 +49,10 @@
   #include <sys/socket.h>
   #include <sys/wait.h>
   #include <netinet/in.h>
+  #include <arpa/inet.h>
   #include <unistd.h>
   #include <netdb.h>
+  #include <strings.h>
   #define recv(x,y,z,a) read(x,y,z)
   #define send(x,y,z,a) write(x,y,z)
   #define closesocket(s) close(s)
@@ -155,11 +159,11 @@ int main(int argc, char *argv[])
 
   /* fork off into the background. */
 #if !defined(__WIN32__) && !defined(WIN32) && !defined(_WIN32)
-  if ((nbyt = fork()) == -1) {
+  if ((i = fork()) == -1) {
     perror("fork");
     return 20;
   }
-  if (nbyt > 0)
+  if (i > 0)
     return 0;
   setsid();
 #endif
