@@ -16,6 +16,12 @@
  * specified listening address will also be used for making the outgoing
  * connections on.
  *
+ * Note that select() is not used to perform writability testing on the
+ * outgoing sockets, so conceivably other connections might have delayed
+ * responses if any of the connected clients or the connection to the
+ * target machine is slow enough to allow its outgoing buffer to fill
+ * to capacity.
+ *
  * Compile with:
  *     cc -O -o datapipe datapipe.c
  * On Solaris/SunOS, compile with:
@@ -31,7 +37,6 @@
  * written by Jeff Lawson <jlawson@bovine.net>
  * inspired by code originally by Todd Vierling, 1995.
  */
-
 
 
 #include <stdio.h>
@@ -70,6 +75,8 @@ struct client_t
 #define MAXCLIENTS 20
 #define IDLETIMEOUT 300
 
+
+const char ident[] = "$Id: datapipe.c,v 1.5 1998/11/30 19:40:17 jlawson Exp $";
 
 int main(int argc, char *argv[])
 { 
