@@ -4,7 +4,7 @@
  * datapipe, which will connect to 'remoteport' on 'remotehost'.
  * It will fork itself into the background on non-Windows machines.
  *
- * This implementation of the tradition "datapipe" does not depend on
+ * This implementation of the traditional "datapipe" does not depend on
  * forking to handle multiple simultaneous clients, and instead is able
  * to do all processing from within a single process, making it ideal
  * for low-memory environments.  The elimination of the fork also
@@ -21,7 +21,7 @@
  * On Solaris/SunOS, compile with:
  *     gcc -Wall datapipe.c -lsocket -lnsl -o datapipe
  * On Windows compile with:
- *     bcc32 datapipe.c                   (Borland C++)
+ *     bcc32 /w datapipe.c                (Borland C++)
  *     cl /W3 datapipe.c wsock32.lib      (Microsoft Visual C++)
  *
  * Run as:
