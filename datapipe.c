@@ -31,7 +31,7 @@
  *     cl /W3 datapipe.c wsock32.lib      (Microsoft Visual C++)
  *
  * Run as:
- *   datapipe localhost localport remoteport remotehost
+ *   datapipe localhost localport remotehost remoteport
  *
  *
  * written by Jeff Lawson <jlawson@bovine.net>
